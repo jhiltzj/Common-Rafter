@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roof Framing Calculator</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#f5f7fa;
+    margin:20px;
+    color:#333;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+}
+
+.card{
+    background:white;
+    border-radius:10px;
+    padding:20px;
+    margin-bottom:20px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
+
+h1{
+    text-align:center;
+    color:#005a9c;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    gap:15px;
+}
+
+.input-group{
+    border:1px solid #ddd;
+    padding:12px;
+    border-radius:6px;
+    background:#fafafa;
+}
+
+label{
+    display:block;
+    font-weight:bold;
+    margin-bottom:6px;
+}
+
+input[type="number"]{
+    width:100%;
+    padding:8px;
+    box-sizing:border-box;
+}
+
+.checkbox-area{
+    margin-top:8px;
+}
+
+.result{
+    padding:12px;
+    border-bottom:1px solid #ddd;
+}
+
+.result:last-child{
+    border-bottom:none;
+}
+
+.value{
+    color:#006400;
+    font-weight:bold;
+    font-size:1.05em;
+}
+
+.formula{
+    color:#666;
+    font-size:0.9em;
+}
+
+.note{
+    margin-top:15px;
+    background:#fff8dc;
+    padding:10px;
+    border-left:4px solid #d4a017;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>Roof Framing Calculator</h1>
+
+<div class="card">
+
+<h2>Required Parameters</h2>
+
+<div class="grid">
+
+<div class="input-group">
+<label>Length of Building</label>
+<input type="number" id="length" step="any">
+<div class="checkbox-area">
+<label>
+<input type="checkbox" id="lengthInches">
+Value entered is in Inches
+</label>
+</div>
+</div>
+
+<div class="input-group">
+<label>Width of Building</label>
+<input type="number" id="width" step="any">
+<div class="checkbox-area">
+<label>
+<input type="checkbox" id="widthInches">
+Value entered is in Inches
+</label>
+</div>
+</div>
+
+<div class="input-group">
+<label>Projection of Wall</label>
+<input type="number" id="wallProjection" step="any">
+<div class="checkbox-area">
+<label>
+<input type="checkbox" id="wallProjectionInches">
+Value entered is in Inches
+</label>
+</div>
+</div>
+
+<div class="input-group">
+<label>Projection of Roof</label>
+<input type="number" id="roofProjection" step="any">
+<div class="checkbox-area">
+<label>
+<input type="checkbox" id="roofProjectionInches">
+Value entered is in Inches
+</label>
+</div>
+</div>
+
+<div class="input-group">
+<label>Roof Slope Rise</label>
+<input type="number" id="rise" step="any">
+</div>
+
+<div class="input-group">
+<label>Roof Slope Run</label>
+<input type="number" id="run" step="any">
+</div>
+
+</div>
+
+<div class="note">
+If the checkbox is checked, the value entered will be treated as inches and automatically converted to feet.
+If unchecked, the value is treated as decimal feet.
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>Calculated Results</h2>
+
+<div class="result">
+<strong>1. 90° SGF</strong><br>
+<span class="formula">
+√((rise/run)<sup>2</sup> + 1)
+</span><br>
+<span id="sgf90" class="value">Waiting for Rise and Run...</span>
+</div>
+
+<div class="result">
+<strong>2. 45° SGF</strong><br>
+<span class="formula">
+√((rise/run)<sup>2</sup> + 2)
+</span><br>
+<span id="sgf45" class="value">Waiting for Rise and Run...</span>
+</div>
+
+<div class="result">
+<strong>3. Common Rafter Line Length</strong><br>
+<span class="formula">
+Width of Building × 90° SGF
+</span><br>
+<span id="rafterLength" class="value">
+Waiting for Width and SGF...
+</span>
+</div>
+
+<div class="result">
+<strong>4. Common Rafter Overhang</strong><br>
+<span class="formula">
+Projection of Roof × 90° SGF
+</span><br>
+<span id="overhang" class="value">
+Waiting for Roof Projection and SGF...
+</span>
+</div>
+
+<div class="result">
+<strong>5. Total Rafter Line Length</strong><br>
+<span class="formula">
+Common Rafter Line Length + Common Rafter Overhang
+</span><br>
+<span id="totalLength" class="value">
+Waiting for Required Values...
+</span>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+function getFeetValue(inputId, checkboxId){
+
+    let value =
+        parseFloat(document.getElementById(inputId).value);
+
+    if(isNaN(value)) return null;
+
+    const inchesChecked =
+        document.getElementById(checkboxId).checked;
+
+    if(inchesChecked){
+        return value / 12;
+    }
+
+    return value;
+}
+
+function formatLength(feet){
+
+    let inches = feet * 12;
+
+    return `
+        ${feet.toFixed(4)} ft
+        <br>
+        ${inches.toFixed(4)} in
+    `;
+}
+
+function calculate(){
+
+    const width =
+        getFeetValue("width","widthInches");
+
+    const roofProjection =
+        getFeetValue("roofProjection","roofProjectionInches");
+
+    const rise =
+        parseFloat(document.getElementById("rise").value);
+
+    const run =
+        parseFloat(document.getElementById("run").value);
+
+    let sgf90 = null;
+    let rafterLength = null;
+    let overhang = null;
+
+    if(rise > 0 && run > 0){
+
+        sgf90 =
+            Math.sqrt(Math.pow(rise/run,2)+1);
+
+        const sgf45 =
+            Math.sqrt(Math.pow(rise/run,2)+2);
+
+        document.getElementById("sgf90").innerHTML =
+            sgf90.toFixed(6);
+
+        document.getElementById("sgf45").innerHTML =
+            sgf45.toFixed(6);
+    }
+
+    if(width !== null && sgf90 !== null){
+
+        rafterLength = width * sgf90;
+
+        document.getElementById("rafterLength").innerHTML =
+            formatLength(rafterLength);
+    }
+
+    if(roofProjection !== null && sgf90 !== null){
+
+        overhang = roofProjection * sgf90;
+
+        document.getElementById("overhang").innerHTML =
+            formatLength(overhang);
+    }
+
+    if(rafterLength !== null && overhang !== null){
+
+        const total =
+            rafterLength + overhang;
+
+        document.getElementById("totalLength").innerHTML =
+            formatLength(total);
+    }
+}
+
+document
+.querySelectorAll("input")
+.forEach(input => {
+    input.addEventListener("input", calculate);
+    input.addEventListener("change", calculate);
+});
+
+</script>
+
+</body>
+</html>
