@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roof Framing Calculator</title>
+
+<style>
+
+body{
+    background:#1e1e1e;
+    color:#f0f0f0;
+    font-family:Arial, Helvetica, sans-serif;
+    margin:20px;
+}
+
+.container{
+    max-width:1100px;
+    margin:auto;
+}
+
+.card{
+    background:#2b2b2b;
+    border:1px solid #444;
+    border-radius:10px;
+    padding:20px;
+    margin-bottom:20px;
+}
+
+h1{
+    text-align:center;
+    color:#4ea1ff;
+    margin-bottom:25px;
+}
+
+h2{
+    color:#4ea1ff;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+    gap:20px;
+}
+
+.input-group{
+    background:#333;
+    padding:15px;
+    border-radius:8px;
+}
+
+.dimension-row{
+    display:flex;
+    gap:10px;
+}
+
+.dimension-row input{
+    flex:1;
+}
+
+label{
+    display:block;
+    margin-bottom:6px;
+    font-weight:bold;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    box-sizing:border-box;
+    background:#444;
+    color:white;
+    border:1px solid #666;
+    border-radius:5px;
+}
+
+input:focus{
+    outline:none;
+    border-color:#4ea1ff;
+}
+
+.result{
+    padding:15px;
+    border-bottom:1px solid #555;
+}
+
+.result:last-child{
+    border-bottom:none;
+}
+
+.value{
+    color:#5fd35f;
+    font-size:1.1em;
+    font-weight:bold;
+}
+
+.formula{
+    color:#bbbbbb;
+    font-size:0.9em;
+}
+
+.note{
+    margin-top:15px;
+    background:#3a3a3a;
+    border-left:4px solid #4ea1ff;
+    padding:10px;
+}
+
+.output-line{
+    margin-top:5px;
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>Roof Framing Calculator</h1>
+
+<div class="card">
+
+<h2>Required Parameters</h2>
+
+<div class="grid">
+
+<div class="input-group">
+<label>Width of Building</label>
+<div class="dimension-row">
+<input type="number" id="widthFeet" placeholder="Feet" step="any">
+<input type="number" id="widthInches" placeholder="Inches" step="any">
+</div>
+</div>
+
+<div class="input-group">
+<label>Projection of Roof</label>
+<div class="dimension-row">
+<input type="number" id="roofFeet" placeholder="Feet" step="any">
+<input type="number" id="roofInches" placeholder="Inches" step="any">
+</div>
+</div>
+
+<div class="input-group">
+<label>Roof Slope Rise</label>
+<input type="number" id="rise" placeholder="Example: 6" step="any">
+</div>
+
+<div class="input-group">
+<label>Roof Slope Run</label>
+<input type="number" id="run" placeholder="Example: 12" step="any">
+</div>
+
+</div>
+
+<div class="note">
+Enter dimensions using separate Feet and Inches boxes. Calculations update automatically.
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>Calculated Results</h2>
+
+<div class="result">
+<strong>1. 90° SGF</strong><br>
+<div class="formula">√((rise/run)<sup>2</sup> + 1)</div>
+<div id="sgf90" class="value">Waiting for Rise and Run...</div>
+</div>
+
+<div class="result">
+<strong>2. 45° SGF</strong><br>
+<div class="formula">√((rise/run)<sup>2</sup> + 2)</div>
+<div id="sgf45" class="value">Waiting for Rise and Run...</div>
+</div>
+
+<div class="result">
+<strong>3. Common Rafter Line Length</strong><br>
+<div class="formula">Width × 90° SGF</div>
+<div id="rafterLength" class="value">Waiting for Width and SGF...</div>
+</div>
+
+<div class="result">
+<strong>4. Common Rafter Overhang</strong><br>
+<div class="formula">Projection of Roof × 90° SGF</div>
+<div id="overhang" class="value">Waiting for Roof Projection and SGF...</div>
+</div>
+
+<div class="result">
+<strong>5. Total Rafter Line Length</strong><br>
+<div class="formula">Common Rafter Length + Common Rafter Overhang</div>
+<div id="totalLength" class="value">Waiting for Required Values...</div>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+function convertToFeet(feetId, inchId){
+
+    const feet =
+        parseFloat(document.getElementById(feetId).value) || 0;
+
+    const inches =
+        parseFloat(document.getElementById(inchId).value) || 0;
+
+    return feet + (inches / 12);
+
+}
+
+function feetToImperial(decimalFeet){
+
+    const feetPart = Math.floor(decimalFeet);
+
+    const inchesPart =
+        (decimalFeet - feetPart) * 12;
+
+    return feetPart + "' " +
+           inchesPart.toFixed(3) + '"';
+
+}
+
+function formatLength(decimalFeet){
+
+    const decimalInches =
+        decimalFeet * 12;
+
+    return `
+        <div class="output-line">
+            ${decimalFeet.toFixed(4)} ft
+        </div>
+
+        <div class="output-line">
+            ${decimalInches.toFixed(4)} in
+        </div>
+
+        <div class="output-line">
+            ${feetToImperial(decimalFeet)}
+        </div>
+    `;
+
+}
+
+function calculate(){
+
+    const width =
+        convertToFeet(
+            "widthFeet",
+            "widthInches"
+        );
+
+    const roofProjection =
+        convertToFeet(
+            "roofFeet",
+            "roofInches"
+        );
+
+    const rise =
+        parseFloat(
+            document.getElementById("rise").value
+        );
+
+    const run =
+        parseFloat(
+            document.getElementById("run").value
+        );
+
+    let sgf90 = null;
+    let rafterLength = null;
+    let overhang = null;
+
+    if(rise > 0 && run > 0){
+
+        sgf90 =
+            Math.sqrt(
+                Math.pow(rise/run,2) + 1
+            );
+
+        const sgf45 =
+            Math.sqrt(
+                Math.pow(rise/run,2) + 2
+            );
+
+        document.getElementById("sgf90").innerHTML =
+            sgf90.toFixed(6);
+
+        document.getElementById("sgf45").innerHTML =
+            sgf45.toFixed(6);
+
+    }
+
+    if(width > 0 && sgf90){
+
+        rafterLength =
+            width * sgf90;
+
+        document.getElementById("rafterLength")
+            .innerHTML =
+            formatLength(rafterLength);
+
+    }
+
+    if(roofProjection > 0 && sgf90){
+
+        overhang =
+            roofProjection * sgf90;
+
+        document.getElementById("overhang")
+            .innerHTML =
+            formatLength(overhang);
+
+    }
+
+    if(rafterLength && overhang){
+
+        const total =
+            rafterLength + overhang;
+
+        document.getElementById("totalLength")
+            .innerHTML =
+            formatLength(total);
+
+    }
+
+}
+
+document
+.querySelectorAll("input")
+.forEach(input => {
+
+    input.addEventListener(
+        "input",
+        calculate
+    );
+
+});
+
+</script>
+
+</body>
+</html>
