@@ -79,6 +79,20 @@ input:focus{
     border-color:#4ea1ff;
 }
 
+button{
+    background:#4ea1ff;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    border-radius:5px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+button:hover{
+    background:#3a8ae0;
+}
+
 .result{
     padding:15px;
     border-bottom:1px solid #555;
@@ -169,7 +183,11 @@ input:focus{
 </div>
 
 <div class="note">
-Enter dimensions using separate Feet and Inches boxes. Shortening values are entered in inches only. Calculations update automatically.
+Enter dimensions using separate Feet and Inches boxes. Top and Bottom Shortening values are entered in inches only. Calculations update automatically.
+</div>
+
+<div style="margin-top:15px;">
+<button id="resetBtn">Reset Calculator</button>
 </div>
 
 </div>
@@ -179,7 +197,17 @@ Enter dimensions using separate Feet and Inches boxes. Shortening values are ent
 <h2>Calculated Results</h2>
 
 <div class="result">
-<strong>1. 90° SGF</strong><br>
+<strong>1. Rafter Run</strong><br>
+<div class="formula">
+Width of Building ÷ 2
+</div>
+<div id="rafterRun" class="value">
+Waiting for Width...
+</div>
+</div>
+
+<div class="result">
+<strong>2. 90° SGF</strong><br>
 <div class="formula">
 √((rise/run)<sup>2</sup> + 1)
 </div>
@@ -189,7 +217,7 @@ Waiting for Rise and Run...
 </div>
 
 <div class="result">
-<strong>2. 45° SGF</strong><br>
+<strong>3. 45° SGF</strong><br>
 <div class="formula">
 √((rise/run)<sup>2</sup> + 2)
 </div>
@@ -199,9 +227,9 @@ Waiting for Rise and Run...
 </div>
 
 <div class="result">
-<strong>3. Common Rafter Line Length</strong><br>
+<strong>4. Common Rafter Line Length</strong><br>
 <div class="formula">
-((Width of Building ÷ 2) − Top Shortening) × 90° SGF
+(Rafter Run − Top Shortening) × 90° SGF
 </div>
 <div id="rafterLength" class="value">
 Waiting for Width, Shortening and SGF...
@@ -209,7 +237,7 @@ Waiting for Width, Shortening and SGF...
 </div>
 
 <div class="result">
-<strong>4. Common Rafter Overhang</strong><br>
+<strong>5. Common Rafter Overhang</strong><br>
 <div class="formula">
 (Projection of Roof − Bottom Shortening) × 90° SGF
 </div>
@@ -219,7 +247,7 @@ Waiting for Projection, Shortening and SGF...
 </div>
 
 <div class="result">
-<strong>5. Total Rafter Line Length</strong><br>
+<strong>6. Total Rafter Line Length</strong><br>
 <div class="formula">
 Common Rafter Length + Common Rafter Overhang
 </div>
@@ -314,8 +342,25 @@ function calculate(){
         ) || 0) / 12;
 
     let sgf90 = null;
+    let rafterRun = null;
     let rafterLength = null;
     let overhang = null;
+
+    if(width > 0){
+
+        rafterRun = width / 2;
+
+        document.getElementById("rafterRun")
+            .innerHTML =
+            formatLength(rafterRun);
+
+    }else{
+
+        document.getElementById("rafterRun")
+            .innerHTML =
+            "Waiting for Width...";
+
+    }
 
     if(rise > 0 && run > 0){
 
@@ -329,25 +374,30 @@ function calculate(){
                 Math.pow(rise / run, 2) + 2
             );
 
-        document.getElementById("sgf90").innerHTML =
+        document.getElementById("sgf90")
+            .innerHTML =
             sgf90.toFixed(6);
 
-        document.getElementById("sgf45").innerHTML =
+        document.getElementById("sgf45")
+            .innerHTML =
             sgf45.toFixed(6);
 
-    } else {
+    }else{
 
-        document.getElementById("sgf90").innerHTML =
+        document.getElementById("sgf90")
+            .innerHTML =
             "Waiting for Rise and Run...";
 
-        document.getElementById("sgf45").innerHTML =
+        document.getElementById("sgf45")
+            .innerHTML =
             "Waiting for Rise and Run...";
+
     }
 
-    if(width > 0 && sgf90){
+    if(rafterRun !== null && sgf90){
 
         const commonRun =
-            (width / 2) - topShortening;
+            rafterRun - topShortening;
 
         if(commonRun > 0){
 
@@ -359,6 +409,7 @@ function calculate(){
                 formatLength(rafterLength);
 
         }
+
     }
 
     if(roofProjection > 0 && sgf90){
@@ -376,6 +427,7 @@ function calculate(){
                 formatLength(overhang);
 
         }
+
     }
 
     if(rafterLength !== null &&
@@ -400,6 +452,44 @@ document
         "input",
         calculate
     );
+
+});
+
+document
+.getElementById("resetBtn")
+.addEventListener("click", function(){
+
+    document
+        .querySelectorAll("input")
+        .forEach(input => {
+
+            input.value = "";
+
+        });
+
+    document.getElementById("rafterRun")
+        .innerHTML =
+        "Waiting for Width...";
+
+    document.getElementById("sgf90")
+        .innerHTML =
+        "Waiting for Rise and Run...";
+
+    document.getElementById("sgf45")
+        .innerHTML =
+        "Waiting for Rise and Run...";
+
+    document.getElementById("rafterLength")
+        .innerHTML =
+        "Waiting for Width, Shortening and SGF...";
+
+    document.getElementById("overhang")
+        .innerHTML =
+        "Waiting for Projection, Shortening and SGF...";
+
+    document.getElementById("totalLength")
+        .innerHTML =
+        "Waiting for Required Values...";
 
 });
 
