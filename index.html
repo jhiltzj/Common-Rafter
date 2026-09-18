@@ -307,6 +307,68 @@ function formatLength(decimalFeet){
 
 }
 
+function gcd(a, b){
+
+    return b === 0 ? a : gcd(b, a % b);
+
+}
+
+function feetToImperialSixteenths(decimalFeet){
+
+    const feetPart = Math.floor(decimalFeet);
+
+    const totalInches =
+        (decimalFeet - feetPart) * 12;
+
+    let wholeInches = Math.floor(totalInches);
+
+    let sixteenths =
+        Math.round((totalInches - wholeInches) * 16);
+
+    // Rounding can push us up to a full inch (16/16)
+    if(sixteenths === 16){
+        wholeInches += 1;
+        sixteenths = 0;
+    }
+
+    let fractionText = "";
+
+    if(sixteenths > 0){
+
+        const divisor = gcd(sixteenths, 16);
+
+        const numerator = sixteenths / divisor;
+        const denominator = 16 / divisor;
+
+        fractionText = " " + numerator + "/" + denominator;
+
+    }
+
+    return feetPart + "' " + wholeInches + fractionText + '"';
+
+}
+
+function formatLengthFraction(decimalFeet){
+
+    const decimalInches =
+        decimalFeet * 12;
+
+    return `
+        <div class="output-line">
+            ${decimalFeet.toFixed(4)} ft
+        </div>
+
+        <div class="output-line">
+            ${decimalInches.toFixed(4)} in
+        </div>
+
+        <div class="output-line">
+            ${feetToImperialSixteenths(decimalFeet)}
+        </div>
+    `;
+
+}
+
 function calculate(){
 
     const width =
@@ -406,7 +468,7 @@ function calculate(){
 
             document.getElementById("rafterLength")
                 .innerHTML =
-                formatLength(rafterLength);
+                formatLengthFraction(rafterLength);
 
         }
 
@@ -424,7 +486,7 @@ function calculate(){
 
             document.getElementById("overhang")
                 .innerHTML =
-                formatLength(overhang);
+                formatLengthFraction(overhang);
 
         }
 
@@ -438,7 +500,7 @@ function calculate(){
 
         document.getElementById("totalLength")
             .innerHTML =
-            formatLength(total);
+            formatLengthFraction(total);
 
     }
 
