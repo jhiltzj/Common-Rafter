@@ -237,7 +237,17 @@ Waiting for Width, Shortening and SGF...
 </div>
 
 <div class="result">
-<strong>5. Common Rafter Overhang</strong><br>
+<strong>5. Total Rise</strong><br>
+<div class="formula">
+Rafter Run × (Rise ÷ Run)
+</div>
+<div id="totalRise" class="value">
+Waiting for Width and Slope...
+</div>
+</div>
+
+<div class="result">
+<strong>6. Common Rafter Overhang</strong><br>
 <div class="formula">
 (Projection of Roof − Bottom Shortening) × 90° SGF
 </div>
@@ -247,7 +257,7 @@ Waiting for Projection, Shortening and SGF...
 </div>
 
 <div class="result">
-<strong>6. Total Rafter Line Length</strong><br>
+<strong>7. Total Rafter Line Length</strong><br>
 <div class="formula">
 Common Rafter Length + Common Rafter Overhang
 </div>
@@ -271,7 +281,6 @@ function convertToFeet(feetId, inchId){
         parseFloat(document.getElementById(inchId).value) || 0;
 
     return feet + (inches / 12);
-
 }
 
 function feetToImperial(decimalFeet){
@@ -283,7 +292,6 @@ function feetToImperial(decimalFeet){
 
     return feetPart + "' " +
            inchesPart.toFixed(3) + '"';
-
 }
 
 function formatLength(decimalFeet){
@@ -304,13 +312,11 @@ function formatLength(decimalFeet){
             ${feetToImperial(decimalFeet)}
         </div>
     `;
-
 }
 
 function gcd(a, b){
 
     return b === 0 ? a : gcd(b, a % b);
-
 }
 
 function feetToImperialSixteenths(decimalFeet){
@@ -325,7 +331,6 @@ function feetToImperialSixteenths(decimalFeet){
     let sixteenths =
         Math.round((totalInches - wholeInches) * 16);
 
-    // Rounding can push us up to a full inch (16/16)
     if(sixteenths === 16){
         wholeInches += 1;
         sixteenths = 0;
@@ -341,11 +346,9 @@ function feetToImperialSixteenths(decimalFeet){
         const denominator = 16 / divisor;
 
         fractionText = " " + numerator + "/" + denominator;
-
     }
 
     return feetPart + "' " + wholeInches + fractionText + '"';
-
 }
 
 function formatLengthFraction(decimalFeet){
@@ -366,7 +369,6 @@ function formatLengthFraction(decimalFeet){
             ${feetToImperialSixteenths(decimalFeet)}
         </div>
     `;
-
 }
 
 function calculate(){
@@ -405,6 +407,7 @@ function calculate(){
 
     let sgf90 = null;
     let rafterRun = null;
+    let totalRise = null;
     let rafterLength = null;
     let overhang = null;
 
@@ -421,7 +424,6 @@ function calculate(){
         document.getElementById("rafterRun")
             .innerHTML =
             "Waiting for Width...";
-
     }
 
     if(rise > 0 && run > 0){
@@ -453,7 +455,22 @@ function calculate(){
         document.getElementById("sgf45")
             .innerHTML =
             "Waiting for Rise and Run...";
+    }
 
+    if(rafterRun !== null && rise > 0 && run > 0){
+
+        totalRise =
+            rafterRun * (rise / run);
+
+        document.getElementById("totalRise")
+            .innerHTML =
+            formatLengthFraction(totalRise);
+
+    }else{
+
+        document.getElementById("totalRise")
+            .innerHTML =
+            "Waiting for Width and Slope...";
     }
 
     if(rafterRun !== null && sgf90){
@@ -469,9 +486,7 @@ function calculate(){
             document.getElementById("rafterLength")
                 .innerHTML =
                 formatLengthFraction(rafterLength);
-
         }
-
     }
 
     if(roofProjection > 0 && sgf90){
@@ -487,9 +502,7 @@ function calculate(){
             document.getElementById("overhang")
                 .innerHTML =
                 formatLengthFraction(overhang);
-
         }
-
     }
 
     if(rafterLength !== null &&
@@ -501,9 +514,7 @@ function calculate(){
         document.getElementById("totalLength")
             .innerHTML =
             formatLengthFraction(total);
-
     }
-
 }
 
 document
@@ -541,6 +552,10 @@ document
         .innerHTML =
         "Waiting for Rise and Run...";
 
+    document.getElementById("totalRise")
+        .innerHTML =
+        "Waiting for Width and Slope...";
+
     document.getElementById("rafterLength")
         .innerHTML =
         "Waiting for Width, Shortening and SGF...";
@@ -552,7 +567,6 @@ document
     document.getElementById("totalLength")
         .innerHTML =
         "Waiting for Required Values...";
-
 });
 
 </script>
